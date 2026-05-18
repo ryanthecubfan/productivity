@@ -1,6 +1,6 @@
-# Claude Code Pane Manager
+# clode — Claude Code Pane Manager
 
-Automatically tiles iTerm2 panes for active Claude Code sessions. A background daemon watches for session changes and fires a macOS dialog asking you to approve any layout change — nothing ever happens without your confirmation.
+Type `clode` in iTerm2 to tile all your active Claude Code sessions into panes and start a background watcher that notifies you when sessions change.
 
 ## Prerequisites
 
@@ -16,22 +16,20 @@ Automatically tiles iTerm2 panes for active Claude Code sessions. A background d
 pip3 install iterm2
 ```
 
-Clone or copy this folder somewhere permanent (e.g. `~/scripts/claude-panes/`), then add it to your `PATH` so you can run `clode` directly:
+Clone or copy this folder somewhere permanent, then put it on your `PATH`:
 
 ```bash
-export PATH="$PATH:$HOME/scripts/claude-panes"
-# Add that line to ~/.zshrc or ~/.bashrc to make it permanent
+# Add to ~/.zshrc or ~/.bashrc
+export PATH="$PATH:$HOME/path/to/clode-folder"
 ```
 
-## Configuration
-
-Copy the default config to your home directory and edit it to match your iTerm2 profile names:
+Copy the default config and edit it to match your iTerm2 profile names:
 
 ```bash
 cp claude-panes.json ~/.claude-panes.json
 ```
 
-Open `~/.claude-panes.json` and replace the profile names (`"Ocean"`, `"Tango Dark"`, etc.) with the exact names of profiles you have in **iTerm2 → Preferences → Profiles**. The `"fallback_profile"` is used for any slot whose name doesn't match an existing profile.
+Open `~/.claude-panes.json` and replace each profile name (`"Ocean"`, `"Tango Dark"`, etc.) with the exact name of a profile in **iTerm2 → Preferences → Profiles**. The `"fallback_profile"` is used for any slot whose name doesn't match.
 
 ```json
 {
@@ -51,32 +49,27 @@ Open `~/.claude-panes.json` and replace the profile names (`"Ocean"`, `"Tango Da
 }
 ```
 
-`window.columns` and `window.rows` control the size of new iTerm2 windows created by the manager; they have no effect on existing windows.
+## Usage
 
-## Start the daemon
-
-```bash
-clode &
 ```
-
-The daemon polls every 5 seconds. Logs are written to `~/.claude-panes.log`.
-
-## Stop the daemon
-
-```bash
-pkill -f clode
+clode            Tile current sessions + start background watcher
+clode status     Show active sessions without changing anything
+clode tile       Tile only (don't start/restart the watcher)
+clode stop       Stop the background watcher
 ```
 
 ## How it works
 
-1. `daemon.py` runs in the background and watches for new or ended Claude Code sessions (using `claude session list --json`, falling back to `pgrep` + `lsof`).
-2. When the session count changes, a macOS dialog pops up:
-   - **New session:** "New Claude session detected (N total). Re-tile?"
-   - **Ended session:** "Claude session ended (N total). Collapse layout?"
-3. If you click **Yes**, `pane_manager.py` is called via the iTerm2 Python API to add, resize, or remove panes.
-4. If you click **No** (or dismiss the dialog), nothing changes.
+**`clode`** — what you type. It finds your active Claude Code sessions, tiles them into iTerm2 panes immediately, and starts `clode_daemon.py` in the background if it isn't already running.
 
-You can always resize panes manually — the manager never resets sizes you've set by hand, and only acts when you explicitly approve a notification.
+**`clode_daemon.py`** — the background watcher. It polls every 5 seconds. When the session count changes it fires a macOS dialog:
+
+- New session detected → "New Claude session detected (N total). Re-tile?"
+- Session ended → "Claude session ended (N total). Collapse layout?"
+
+Click **Yes** and the panes are updated. Click **No** and nothing happens. You can also resize panes freely — the manager never resets sizes you've set by hand.
+
+Logs are written to `~/.claude-panes.log`.
 
 ## Layouts
 
@@ -89,17 +82,16 @@ You can always resize panes manually — the manager never resets sizes you've s
 | 5 | 3 panes top row, 2 panes bottom row |
 | 6 | 3×2 full grid |
 
-Transitions are **additive** where possible — existing panes are never closed or reopened unless going from 5 to 6 sessions (which requires a full reflow of the top row).
+Transitions are additive where possible — existing panes are never closed or reopened. The one exception is 5→6 sessions, which requires a full reflow of the top row.
 
 ## Customizing colors
 
-Edit `~/.claude-panes.json` and change the profile names. Changes take effect the next time a pane is created (existing panes keep their current color).
+Edit `~/.claude-panes.json` and change the profile names. Changes take effect on the next pane creation; existing panes keep their current colors.
 
 ## Troubleshooting
 
 - **"Enable Python API" not visible in iTerm2:** Update to iTerm2 3.3 or later.
-- **`iterm2` module not found:** Run `pip3 install iterm2` and make sure you're using the same Python that runs the scripts.
-- **Dialogs don't appear:** Make sure you're running macOS 10.14+ and that your terminal/shell has Accessibility or Automation permissions in **System Preferences → Privacy & Security**.
-- **Profiles not found:** Profile names in `~/.claude-panes.json` must match exactly (case-sensitive) the names in iTerm2 Preferences → Profiles.
+- **`iterm2` module not found:** Run `pip3 install iterm2`.
+- **`clode` not found:** Make sure the script directory is on your `PATH`.
+- **Profiles not found:** Names in `~/.claude-panes.json` must match exactly (case-sensitive) the names in iTerm2 Preferences → Profiles.
 - **Check the log:** `tail -f ~/.claude-panes.log`
-- **clode not found:** Make sure the script directory is on your `PATH`, or run it as `python3 /path/to/clode &`.

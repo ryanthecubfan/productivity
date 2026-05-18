@@ -1,46 +1,36 @@
 #!/usr/bin/env python3
 """
-Claude Code session daemon — watches for session changes and fires macOS
-dialogs asking permission before any layout change.
-Start with: clode &
+clode — tile your Claude Code sessions in iTerm2 right now.
+
+Run this in iTerm2:
+    clode          # tile current sessions + start background watcher
+    clode tile     # tile only (no daemon start)
+    clode stop     # stop the background watcher
+    clode status   # show current sessions without changing anything
 """
 
 import json
-import logging
 import os
-import signal
 import subprocess
 import sys
-import time
 
-LOG_FILE = os.path.expanduser("~/.claude-panes.log")
-POLL_INTERVAL = 5  # seconds
-PANE_MANAGER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pane_manager.py")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PANE_MANAGER = os.path.join(SCRIPT_DIR, "pane_manager.py")
+DAEMON_SCRIPT = os.path.join(SCRIPT_DIR, "clode_daemon.py")
 
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-)
 
-# Also mirror to stderr when running interactively
-_stderr = logging.StreamHandler(sys.stderr)
-_stderr.setLevel(logging.INFO)
-logging.getLogger().addHandler(_stderr)
-
+# ---------------------------------------------------------------------------
+# Session discovery (shared with daemon)
+# ---------------------------------------------------------------------------
 
 def get_sessions_via_claude_cli():
-    """Try `claude session list --json`. Returns list of dicts or None on failure."""
     try:
         result = subprocess.run(
             ["claude", "session", "list", "--json"],
-            capture_output=True,
-            text=True,
-            timeout=5,
+            capture_output=True, text=True, timeout=5,
         )
         if result.returncode == 0 and result.stdout.strip():
             data = json.loads(result.stdout)
-            # Normalise: accept a list or {"sessions": [...]}
             if isinstance(data, list):
                 return data
             if isinstance(data, dict) and "sessions" in data:
@@ -51,38 +41,29 @@ def get_sessions_via_claude_cli():
 
 
 def get_sessions_via_pgrep():
-    """
-    Fall back to pgrep + lsof to discover running `claude` processes.
-    Returns list of dicts: [{"id": "<pid>", "pid": pid, "cwd": "..."}]
-    """
     try:
         result = subprocess.run(
             ["pgrep", "-fl", "claude"],
-            capture_output=True,
-            text=True,
-            timeout=5,
+            capture_output=True, text=True, timeout=5,
         )
         sessions = []
-        seen_pids = set()
+        seen = set()
         for line in result.stdout.splitlines():
             parts = line.split(None, 1)
             if not parts:
                 continue
-            pid_str = parts[0]
-            cmdline = parts[1] if len(parts) > 1 else ""
-            # Skip this daemon and pane_manager itself
-            if "daemon.py" in cmdline or "pane_manager.py" in cmdline:
+            pid_str, cmdline = parts[0], (parts[1] if len(parts) > 1 else "")
+            if any(x in cmdline for x in ("clode", "pane_manager")):
                 continue
-            # Only care about lines that look like the claude CLI
             if "claude" not in cmdline.lower():
                 continue
             try:
                 pid = int(pid_str)
             except ValueError:
                 continue
-            if pid in seen_pids:
+            if pid in seen:
                 continue
-            seen_pids.add(pid)
+            seen.add(pid)
             cwd = _get_cwd(pid)
             sessions.append({"id": str(pid), "pid": pid, "cwd": cwd, "_fallback": True})
         return sessions
@@ -91,15 +72,12 @@ def get_sessions_via_pgrep():
 
 
 def _get_cwd(pid):
-    """Return cwd of a process via lsof, or empty string."""
     try:
-        result = subprocess.run(
+        r = subprocess.run(
             ["lsof", "-p", str(pid), "-a", "-d", "cwd", "-Fn"],
-            capture_output=True,
-            text=True,
-            timeout=5,
+            capture_output=True, text=True, timeout=5,
         )
-        for line in result.stdout.splitlines():
+        for line in r.stdout.splitlines():
             if line.startswith("n"):
                 return line[1:]
     except (subprocess.TimeoutExpired, FileNotFoundError):
@@ -114,80 +92,88 @@ def get_sessions():
     return sessions
 
 
-def show_dialog(message):
-    """
-    Show a macOS Yes/No dialog via osascript.
-    Returns True if the user clicked Yes, False otherwise.
-    """
-    script = (
-        f'display dialog {json.dumps(message)} '
-        f'buttons {{"No", "Yes"}} default button "Yes" '
-        f'with title "Claude Pane Manager"'
-    )
+# ---------------------------------------------------------------------------
+# Daemon control
+# ---------------------------------------------------------------------------
+
+def daemon_running():
     try:
         result = subprocess.run(
-            ["osascript", "-e", script],
-            capture_output=True,
-            text=True,
-            timeout=60,
+            ["pgrep", "-f", "clode_daemon.py"],
+            capture_output=True, text=True,
         )
-        return "Yes" in result.stdout
-    except subprocess.TimeoutExpired:
+        return result.returncode == 0
+    except FileNotFoundError:
         return False
 
 
-def call_pane_manager(command, sessions):
-    """
-    Invoke pane_manager.py with the given command and session list as JSON.
-    Runs detached so this daemon is never blocked.
-    """
-    session_json = json.dumps(sessions)
-    cmd = [sys.executable, PANE_MANAGER, command, session_json]
-    logging.info("Calling pane_manager: %s", command)
-    subprocess.Popen(cmd, start_new_session=True)
+def start_daemon():
+    subprocess.Popen(
+        [sys.executable, DAEMON_SCRIPT],
+        start_new_session=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    print("Watcher started (clode_daemon.py). Logs → ~/.claude-panes.log")
 
 
-def session_ids(sessions):
-    return {s.get("id") or s.get("pid") for s in sessions}
+def stop_daemon():
+    result = subprocess.run(["pkill", "-f", "clode_daemon.py"], capture_output=True)
+    if result.returncode == 0:
+        print("Watcher stopped.")
+    else:
+        print("Watcher was not running.")
 
+
+# ---------------------------------------------------------------------------
+# Tile / status
+# ---------------------------------------------------------------------------
+
+def tile(sessions):
+    if not sessions:
+        print("No active Claude Code sessions found.")
+        return
+    print(f"Found {len(sessions)} session(s). Tiling…")
+    subprocess.run([sys.executable, PANE_MANAGER, "tile", json.dumps(sessions)])
+
+
+def show_status(sessions):
+    if not sessions:
+        print("No active Claude Code sessions.")
+        return
+    print(f"{len(sessions)} active Claude Code session(s):")
+    for i, s in enumerate(sessions, 1):
+        sid = s.get("id") or s.get("pid", "?")
+        cwd = s.get("cwd", "")
+        fallback = " (pid-based)" if s.get("_fallback") else ""
+        print(f"  {i}. id={sid}{fallback}" + (f"  cwd={cwd}" if cwd else ""))
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 def main():
-    logging.info("Claude pane daemon started (pid=%d)", os.getpid())
-    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+    subcommand = sys.argv[1] if len(sys.argv) > 1 else "default"
 
-    previous_sessions = get_sessions()
-    previous_ids = session_ids(previous_sessions)
-    logging.info("Initial sessions: %d", len(previous_sessions))
+    if subcommand == "stop":
+        stop_daemon()
+        return
 
-    while True:
-        time.sleep(POLL_INTERVAL)
-        try:
-            current_sessions = get_sessions()
-        except Exception as exc:
-            logging.warning("Error polling sessions: %s", exc)
-            continue
+    sessions = get_sessions()
 
-        current_ids = session_ids(current_sessions)
+    if subcommand == "status":
+        show_status(sessions)
+        return
 
-        new_ids = current_ids - previous_ids
-        ended_ids = previous_ids - current_ids
+    # default or "tile": tile now, then ensure daemon is running
+    tile(sessions)
 
-        if new_ids:
-            n = len(current_sessions)
-            msg = f"New Claude session detected ({n} total). Re-tile?"
-            logging.info("New sessions detected: %s", new_ids)
-            if show_dialog(msg):
-                call_pane_manager("tile", current_sessions)
-
-        if ended_ids:
-            n = len(current_sessions)
-            msg = f"Claude session ended ({n} total). Collapse layout?"
-            logging.info("Sessions ended: %s", ended_ids)
-            if show_dialog(msg):
-                call_pane_manager("collapse", current_sessions)
-
-        previous_sessions = current_sessions
-        previous_ids = current_ids
+    if subcommand == "default":
+        if daemon_running():
+            print("Watcher already running.")
+        else:
+            start_daemon()
 
 
 if __name__ == "__main__":
