@@ -1,0 +1,15 @@
+{
+  "pane_profiles": {
+    "1": "Ocean",
+    "2": "Tango Dark",
+    "3": "Solarized Dark",
+    "4": "Tomorrow Night",
+    "5": "Dracula",
+    "6": "Nord"
+  },
+  "fallback_profile": "Default",
+  "window": {
+    "columns": 220,
+    "rows": 50
+  }
+}
