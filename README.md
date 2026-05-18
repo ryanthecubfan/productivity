@@ -16,7 +16,12 @@ Automatically tiles iTerm2 panes for active Claude Code sessions. A background d
 pip3 install iterm2
 ```
 
-Clone or copy this folder somewhere permanent (e.g. `~/scripts/claude-panes/`).
+Clone or copy this folder somewhere permanent (e.g. `~/scripts/claude-panes/`), then add it to your `PATH` so you can run `clode` directly:
+
+```bash
+export PATH="$PATH:$HOME/scripts/claude-panes"
+# Add that line to ~/.zshrc or ~/.bashrc to make it permanent
+```
 
 ## Configuration
 
@@ -51,7 +56,7 @@ Open `~/.claude-panes.json` and replace the profile names (`"Ocean"`, `"Tango Da
 ## Start the daemon
 
 ```bash
-python3 daemon.py &
+clode &
 ```
 
 The daemon polls every 5 seconds. Logs are written to `~/.claude-panes.log`.
@@ -59,7 +64,7 @@ The daemon polls every 5 seconds. Logs are written to `~/.claude-panes.log`.
 ## Stop the daemon
 
 ```bash
-pkill -f daemon.py
+pkill -f clode
 ```
 
 ## How it works
@@ -68,7 +73,7 @@ pkill -f daemon.py
 2. When the session count changes, a macOS dialog pops up:
    - **New session:** "New Claude session detected (N total). Re-tile?"
    - **Ended session:** "Claude session ended (N total). Collapse layout?"
-3. If you click **Yes**, `pane_manager.py` is invoked via the iTerm2 Python API to add, resize, or remove panes.
+3. If you click **Yes**, `pane_manager.py` is called via the iTerm2 Python API to add, resize, or remove panes.
 4. If you click **No** (or dismiss the dialog), nothing changes.
 
 You can always resize panes manually — the manager never resets sizes you've set by hand, and only acts when you explicitly approve a notification.
@@ -97,3 +102,4 @@ Edit `~/.claude-panes.json` and change the profile names. Changes take effect th
 - **Dialogs don't appear:** Make sure you're running macOS 10.14+ and that your terminal/shell has Accessibility or Automation permissions in **System Preferences → Privacy & Security**.
 - **Profiles not found:** Profile names in `~/.claude-panes.json` must match exactly (case-sensitive) the names in iTerm2 Preferences → Profiles.
 - **Check the log:** `tail -f ~/.claude-panes.log`
+- **clode not found:** Make sure the script directory is on your `PATH`, or run it as `python3 /path/to/clode &`.

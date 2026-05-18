@@ -2,7 +2,7 @@
 """
 Claude Code session daemon — watches for session changes and fires macOS
 dialogs asking permission before any layout change.
-Start with: python3 daemon.py &
+Start with: clode &
 """
 
 import json
