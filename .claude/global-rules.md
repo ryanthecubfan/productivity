@@ -18,3 +18,13 @@ Whenever you scope a unit of work, a ticket, or a session launch, provide all of
 **On long/agentic runs:** give **periodic progress updates** — accumulated tokens used and estimated time remaining — at a sensible cadence (≈ every 5 minutes for long autonomous runs).
 
 > Interaction preferences already in my global instructions (one question at a time; brief overview then step-by-step with confirmation; acknowledge obscure-reference jokes; ask why rather than presume judgment) remain in force and aren't repeated here.
+
+---
+
+## Jira ticket lifecycle (standing — applies to every Claude Code session)
+
+**You must know the Jira ticket number before doing any work.** If no ticket number has been given and the task wasn't explicitly framed as untracked work, stop and ask for it before proceeding. Do not start work, make commits, or take any action on behalf of a ticket you cannot identify.
+
+- **When you start work on a ticket** — transition it to **In Progress** before doing anything else.
+- **When you finish a ticket** — transition it to **Done** after all commits are merged and all acceptance criteria are met.
+- **If you don’t know the ticket number** — you cannot proceed autonomously. Stop and ask the user to provide it or explicitly tell you to proceed without one.
