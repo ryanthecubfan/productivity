@@ -1,49 +1,27 @@
 name: Sync Claude Rules
-
 on:
   repository_dispatch:
     types: [sync-claude-rules]
-
 jobs:
   sync:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Write global rules
         env:
           RULES_CONTENT: ${{ github.event.client_payload.content }}
         run: |
           mkdir -p .claude
           printf '%s\n' "$RULES_CONTENT" > .claude/global-rules.md
-
-      - name: Commit and push branch
-        id: push
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          branch="sync-claude-rules-${{ github.run_id }}"
-          git checkout -b "$branch"
           git add .claude/global-rules.md
           git diff --staged --quiet && echo "No changes to commit" && exit 0
           git commit -m "chore: sync global Claude rules from mandala"
-          git push origin "$branch"
-          echo "branch=$branch" >> $GITHUB_OUTPUT
-          echo "changed=true" >> $GITHUB_OUTPUT
-
-      - name: Create and merge PR
-        if: steps.push.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pr_url=$(gh pr create \
-            --title "chore: sync global Claude rules" \
-            --body "Automated sync of \`.claude/global-rules.md\` from [mandala](https://github.com/ryanthecubfan/mandala)." \
-            --head "${{ steps.push.outputs.branch }}" \
-            --base main)
-          echo "PR created: $pr_url"
-          gh pr merge "$pr_url" --squash --delete-branch
+          git push origin main
