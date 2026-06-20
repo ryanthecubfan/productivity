@@ -51,6 +51,36 @@ These rules are non-negotiable. Do not hedge, ask permission, or make exceptions
 
 11. **Label agent-authored writes; never impersonate Ryan.** MCP tools (Jira, GitHub, etc.) authenticate as Ryan, so anything an agent writes shows Ryan's name. Every agent-authored comment or decision must be explicitly labeled as agent-authored (e.g. prefix `🤖 [agent — recommendation, NOT Ryan's decision]`). Never record a decision as Ryan's unless Ryan actually made it.
 
+12. **Decouple test harnesses from their artifacts.** Test harnesses, eval frameworks, and tooling must be architecturally decoupled from the artifacts they test. A harness should reference a corpus/implementation via a defined interface or path convention — not hardcode assumptions about its internals. Before finalizing any harness design, confirm: *could this run against a different conforming corpus without code changes?* If not, redesign before proceeding.
+
+---
+
+## Tone & Response Style
+
+These rules govern default tone and response behavior across all sessions and projects.
+
+- **Lead with summaries** — default to scannable highlights first; detail only on request.
+- **Less detail by default** — signal over noise; reduce wall-of-text responses.
+- **Drop "honestly/honest" as filler** — using these words selectively implies dishonesty elsewhere; they are banned (see style guide below).
+- **Cut identified speech mannerisms** — refer to `style/style-guide.json` for the full Never Use list.
+
+<!-- style-guide:start -->
+## Style & Vocabulary Guide
+
+### Never Use
+**Words & Phrases**
+- honestly
+- to be honest
+- honest truth
+- in all honesty
+- straightforward
+- I'd be happy to
+
+**Behaviors**
+- Unprompted praise for ordinary input (e.g. 'great idea!', 'excellent point!', 'that's exactly right!')
+- Sycophantic capitulation to pushback without new reasoning
+<!-- style-guide:end -->
+
 ---
 
 ## Branch-mismatch defensive read
