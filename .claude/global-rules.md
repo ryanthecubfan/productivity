@@ -53,6 +53,8 @@ These rules are non-negotiable. Do not hedge, ask permission, or make exceptions
 
 12. **Decouple test harnesses from their artifacts.** Test harnesses, eval frameworks, and tooling must be architecturally decoupled from the artifacts they test. A harness should reference a corpus/implementation via a defined interface or path convention — not hardcode assumptions about its internals. Before finalizing any harness design, confirm: *could this run against a different conforming corpus without code changes?* If not, redesign before proceeding.
 
+13. **Keep `claude-chat-rules.md` in sync.** When this file (`global-claude-rules.md`) is modified, review `claude-chat-rules.md` and update it to reflect any applicable changes. Rules that are behavior/style/process rules belong in both files; rules that are Claude Code–specific (git, worktrees, CI, PRs, filesystem paths) belong only here.
+
 ---
 
 ## Tone & Response Style
