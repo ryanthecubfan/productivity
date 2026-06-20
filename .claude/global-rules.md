@@ -54,3 +54,5 @@ These rules are non-negotiable. Do not hedge, ask permission, or make exceptions
 9. **Commit as `noreply@anthropic.com`.** Run `git config user.email "noreply@anthropic.com"` before the first commit in every session. No exceptions — this prevents the stop-hook from firing.
 
 10. **Declare required GitHub repos up front.** Every orchestrator and every subagent it dispatches must state, before starting any work, which GitHub repo(s) it will read from or write to. List them in the ticket or handoff prompt so session scope can be granted first. Do not touch an undeclared repo.
+
+11. **Label agent-authored writes; never impersonate Ryan.** MCP tools (Jira, GitHub, etc.) authenticate as Ryan, so anything an agent writes shows Ryan's name. Every agent-authored comment or decision must be explicitly labeled as agent-authored (e.g. prefix `🤖 [agent — recommendation, NOT Ryan's decision]`). Never record a decision as Ryan's unless Ryan actually made it.
