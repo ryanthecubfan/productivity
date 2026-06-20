@@ -28,3 +28,29 @@ Whenever you scope a unit of work, a ticket, or a session launch, provide all of
 - **When you start work on a ticket** — transition it to **In Progress** before doing anything else.
 - **When you finish a ticket** — transition it to **Done** only after all changes are merged to origin `main`. "Finished" means code is on `main`, not just committed or PR-open.
 - **If you don’t know the ticket number** — you cannot proceed autonomously. Stop and ask the user to provide it or explicitly tell you to proceed without one.
+
+---
+
+## Standing rules (standing — applies to every Claude Code session)
+
+These rules are non-negotiable. Do not hedge, ask permission, or make exceptions.
+
+1. **Never force-push `main`.** Do not do this under any circumstances, even if a rebase conflict seems easier to resolve that way.
+
+2. **Anthropic/Claude calls go through the Claude subscription, not an API key.** Do not use, request, or suggest an API key for Claude or any Anthropic model. The subscription is the only authorized path.
+
+3. **Always rebase + squash before merging.** Never create a merge commit. Every PR lands on `main` as a single squash-merged commit.
+
+4. **Merge only when CI is green and there are no unresolved review comments.** Do not merge early "just to unblock" anything.
+
+5. **Never skip or disable tests.** No `--skip`, no commented-out test cases, no `skip()` or `xit()`. Tests must be brittle by design — a flaky test that hides a real failure is worse than no test.
+
+6. **Every "for now" decision gets a tech-debt ticket.** If you defer something, open a Jira ticket before moving on. No undocumented deferrals.
+
+7. **A subagent works exactly one ticket.** Never assign one subagent to multiple tickets. A ticket may be handled by N subagents (parallel research, multiple workers); an orchestrator may run many concurrently within a shared domain. Isolation is per-subagent, not per-session.
+
+8. **Always create a git worktree for ticket work.** Never commit directly to `main` or to the parent session’s branch. Use `/worktree-bootstrap <ticket-id>` at the start of every ticket.
+
+9. **Commit as `noreply@anthropic.com`.** Run `git config user.email "noreply@anthropic.com"` before the first commit in every session. No exceptions — this prevents the stop-hook from firing.
+
+10. **Declare required GitHub repos up front.** Every orchestrator and every subagent it dispatches must state, before starting any work, which GitHub repo(s) it will read from or write to. List them in the ticket or handoff prompt so session scope can be granted first. Do not touch an undeclared repo.
