@@ -1,9 +1,3 @@
-# Global Rules — drop-in block for your global CLAUDE.md / Global Instructions
-
-*Paste into Global Instructions (Cowork → Global Instructions, or claude.ai → Settings → Custom Instructions). This is the full standing per-work-item requirement, assembled from your own repeated asks across May–June 2026 — including your own instruction that it "go in memory and apply to all Claude Code sessions."*
-
----
-
 ## Work-item / ticket requirements (standing — applies to every Claude Code session)
 
 Whenever you scope a unit of work, a ticket, or a session launch, provide all of the following before I set you loose. Treat it as the definition of done for *proposing* work:
