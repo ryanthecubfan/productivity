@@ -17,13 +17,9 @@ Whenever you scope a unit of work, a ticket, or a session launch, provide all of
 
 ## Optional workflow: Two-pass ticket creation (scope → flesh → execute)
 
-*Optional — a pattern teams may **select** for building a ticket backlog, not a mandate. It separates human-judgment scoping from mechanical fleshing. The work-item / ticket requirements above stay intact; their fields are simply produced in Pass 2 rather than inline.*
+*Optional — a pattern teams may **select** for building a ticket backlog, not a mandate.* It separates human-judgment scoping from mechanical fleshing, so the human conversation stays short and judgment-only while expansion happens unattended. Three stages: **Pass 1 — Scoping** (interactive, one question at a time — lock scope, dependencies/gating, acceptance, repos → a "fleshed-out-enough" skeleton); **Pass 2 — Fleshing** (unattended Opus agent fills the mechanical work-item fields + copy-ready prompt); **Pass 3 — Execution** (a worker runs one fleshed ticket per the one-subagent-per-ticket (rule 7) and worktree (rule 8) rules). The work-item / ticket requirements above stay intact — produced in Pass 2 rather than inline.
 
-- **Pass 1 — Scoping (interactive, with the human).** A live session interrogates the human one question at a time to lock only the decisions that need human judgment: each ticket's scope boundary, its dependencies and gating (what blocks what), its acceptance contract (definition of done), and which repo(s) it touches. Output is a "fleshed-out-enough" skeleton per ticket — not a launch-ready ticket.
-- **Pass 2 — Fleshing (unattended Opus agent).** Picks up the skeletons and expands each into a launch-ready ticket by filling the mechanical work-item fields: model recommendation, effort level, context-window note, token estimate, wall-time estimate, the copy-ready prompt prose, and any internal subagent decomposition. No human in the loop.
-- **Pass 3 — Execution (worker agent, mail-in/queue).** A worker picks up one fully-fleshed ticket and executes it per the standing one-subagent-per-ticket (rule 7) and worktree (rule 8) rules.
-
-**Why:** keeps the human-in-the-loop conversation short and high-signal (judgment only), pushes lengthy mechanical expansion to an unattended agent, and leaves the definition-of-done fields (the work-item / ticket requirements above) intact — produced in Pass 2 rather than inline.
+**Full playbook:** the `two-pass-tickets` skill (`/two-pass-tickets`) — loaded on demand, so the detailed mechanics don't sit in context unless the workflow is in use.
 
 ---
 
