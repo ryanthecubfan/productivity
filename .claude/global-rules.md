@@ -45,7 +45,7 @@ These rules are non-negotiable. Do not hedge, ask permission, or make exceptions
 
 8. **Always create a git worktree for ticket work.** Never commit directly to `main` or to the parent session’s branch. Use `/worktree-bootstrap <ticket-id>` at the start of every ticket.
 
-9. **Commit as `noreply@anthropic.com`.** Run `git config user.email "noreply@anthropic.com"` before the first commit in every session. No exceptions — this prevents the stop-hook from firing.
+9. **Commit as committer `noreply@anthropic.com`, author `claude@ryanthecubfan.com`.** Run `git config user.email "noreply@anthropic.com"` before the first commit in every session (keeps commits signed/Verified and prevents the stop-hook from firing), and pass `--author="Claude <claude@ryanthecubfan.com>"` on every commit so authorship is attributed to Claude's address. No exceptions.
 
 10. **Declare required GitHub repos up front.** Every orchestrator and every subagent it dispatches must state, before starting any work, which GitHub repo(s) it will read from or write to. List them in the ticket or handoff prompt so session scope can be granted first. Do not touch an undeclared repo.
 
