@@ -1,15 +1,10 @@
 ## Work-item / ticket requirements (standing — applies to every Claude Code session)
 
-Whenever you scope a unit of work, a ticket, or a session launch, provide all of the following before I set you loose. Treat it as the definition of done for *proposing* work:
+Whenever you scope a unit of work, a ticket, or a session launch, you owe — before I set you loose — a full work-item recommendation covering all six of: **model, effort level, context-window note, token estimate, wall-time estimate, and a copy-ready prompt.** Treat it as the definition of done for *proposing* work.
 
-1. **Model recommendation** — Haiku / Sonnet / Opus / Fable, with a one-line rationale. For sub-agents, recommend the **cheapest model that will do the job effectively**; for the orchestrator/main agent, recommend the model whose judgment the task actually needs.
-2. **Effort level** — one of low / medium / high / xhigh (extra-high) / max.
-3. **Context window** *(when it matters)* — e.g. for Opus, call out 1M vs standard 200K and why.
-4. **Token estimate** — input / output / cache.
-5. **Wall-time estimate** — rounded up to the nearest 5, 10, or 15 minutes (your call) for anything under an hour; 15-minute increments above an hour.
-6. **A copy-ready prompt** — a self-contained prompt written for the recommended model, complete enough to launch from on its own. When I ask for "just the prompt," reply with the prompt and nothing else (I'm often copying it on my phone).
+Produce all six with the **`prompt-rec`** skill (`/prompt-rec`) — the canonical engine for the per-field heuristics, the output format, and the `--to-chat` / `--to-ticket` / `--count-tokens` modes. Don't restate those heuristics here; the skill is the single source of truth.
 
-**On long/agentic runs:** give **periodic progress updates** — accumulated tokens used and estimated time remaining — at a sensible cadence (≈ every 5 minutes for long autonomous runs).
+**On long/agentic runs:** emit periodic progress updates (accumulated tokens used + estimated time remaining, ≈ every 5 minutes) with the **`progress-reporter`** skill (`/progress-reporter`).
 
 > Interaction preferences already in my global instructions (one question at a time; brief overview then step-by-step with confirmation; acknowledge obscure-reference jokes; ask why rather than presume judgment) remain in force and aren't repeated here.
 
