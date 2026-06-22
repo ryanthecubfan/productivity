@@ -15,6 +15,18 @@ Whenever you scope a unit of work, a ticket, or a session launch, provide all of
 
 ---
 
+## Optional workflow: Two-pass ticket creation (scope → flesh → execute)
+
+*Optional — a pattern teams may **select** for building a ticket backlog, not a mandate. It separates human-judgment scoping from mechanical fleshing. The work-item / ticket requirements above stay intact; their fields are simply produced in Pass 2 rather than inline.*
+
+- **Pass 1 — Scoping (interactive, with the human).** A live session interrogates the human one question at a time to lock only the decisions that need human judgment: each ticket's scope boundary, its dependencies and gating (what blocks what), its acceptance contract (definition of done), and which repo(s) it touches. Output is a "fleshed-out-enough" skeleton per ticket — not a launch-ready ticket.
+- **Pass 2 — Fleshing (unattended Opus agent).** Picks up the skeletons and expands each into a launch-ready ticket by filling the mechanical work-item fields: model recommendation, effort level, context-window note, token estimate, wall-time estimate, the copy-ready prompt prose, and any internal subagent decomposition. No human in the loop.
+- **Pass 3 — Execution (worker agent, mail-in/queue).** A worker picks up one fully-fleshed ticket and executes it per the standing one-subagent-per-ticket (rule 7) and worktree (rule 8) rules.
+
+**Why:** keeps the human-in-the-loop conversation short and high-signal (judgment only), pushes lengthy mechanical expansion to an unattended agent, and leaves the definition-of-done fields (the work-item / ticket requirements above) intact — produced in Pass 2 rather than inline.
+
+---
+
 ## Jira ticket lifecycle (standing — applies to every Claude Code session)
 
 **You must know the Jira ticket number before doing any work.** If no ticket number has been given and the task wasn't explicitly framed as untracked work, stop and ask for it before proceeding. Do not start work, make commits, or take any action on behalf of a ticket you cannot identify.
