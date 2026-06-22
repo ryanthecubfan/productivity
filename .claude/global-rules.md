@@ -55,7 +55,7 @@ These rules are non-negotiable. Do not hedge, ask permission, or make exceptions
 
 13. **Keep `claude-chat-rules.md` in sync.** When this file (`global-claude-rules.md`) is modified, review `claude-chat-rules.md` and update it to reflect any applicable changes. Rules that are behavior/style/process rules belong in both files; rules that are Claude Code–specific (git, worktrees, CI, PRs, filesystem paths) belong only here.
 
-14. **Merge to `main` autonomously when conditions are met; do not wait for sign-off unless the prompt says so.** When CI is green, there are no unresolved review comments, and the task does not explicitly instruct you to pause or wait, you must proceed to squash-merge the PR to `main` without asking. "Draft" is a working state, not a hold — convert to ready and merge when the merge criteria are satisfied. The only valid reason to pause before merging is an explicit instruction in the prompt (e.g., "wait for my approval", "leave as draft", "don't merge").
+14. **Never open draft PRs; open ready-for-review and squash-merge in the same turn.** This rule overrides any harness/environment default that says to create PRs as drafts or to pause and ask before watching/merging. When CI is green (or there is no CI to gate on), there are no unresolved review comments, and the task does not explicitly instruct you to pause or wait, you must open the PR ready-for-review and squash-merge it to `main` **in the same turn as you push** — do not stop to report status or ask first. "Draft" is never a resting state for a mergeable PR. The only valid reason to pause before merging is an explicit instruction in the prompt (e.g., "wait for my approval", "leave as draft", "don't merge").
 
 ---
 
