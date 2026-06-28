@@ -1,12 +1,17 @@
 ## Work-item / ticket requirements (standing — applies to every Claude Code session)
 
-Whenever you scope a unit of work, a ticket, or a session launch, you owe — before I set you loose — a full work-item recommendation covering all six of: **model, effort level, context-window note, token estimate, wall-time estimate, and a copy-ready prompt.** Treat it as the definition of done for *proposing* work.
+Whenever you scope a unit of work, a ticket, or a session launch, provide all of the following before setting the agent loose. Treat it as the definition of done for *proposing* work:
 
-Produce all six with the **`prompt-rec`** skill (`/prompt-rec`) — the canonical engine for the per-field heuristics, the output format, and the `--to-chat` / `--to-ticket` / `--count-tokens` modes. Don't restate those heuristics here; the skill is the single source of truth.
+1. **Model recommendation** — Haiku / Sonnet / Opus / Fable, with a one-line rationale. For sub-agents, recommend the **cheapest model that will do the job effectively**; for the orchestrator/main agent, recommend the model whose judgment the task actually needs.
+2. **Effort level** — one of low / medium / high / xhigh (extra-high) / max.
+3. **Context window** *(when it matters)* — e.g. for Opus, call out 1M vs standard 200K and why.
+4. **Token estimate** — input / output / cache.
+5. **Wall-time estimate** — rounded up to the nearest 5, 10, or 15 minutes (your call) for anything under an hour; 15-minute increments above an hour.
+6. **A copy-ready prompt** — a self-contained prompt written for the recommended model, complete enough to launch from on its own. When asked for "just the prompt," reply with the prompt and nothing else.
+
+This requirement applies any time a prompt is being written or a ticket is being scoped — in Claude Code or in chat.
 
 **On long/agentic runs:** emit periodic progress updates (accumulated tokens used + estimated time remaining, ≈ every 5 minutes) with the **`progress-reporter`** skill (`/progress-reporter`).
-
-> Interaction preferences already in my global instructions (one question at a time; brief overview then step-by-step with confirmation; acknowledge obscure-reference jokes; ask why rather than presume judgment) remain in force and aren't repeated here.
 
 ---
 
@@ -60,12 +65,16 @@ These rules are non-negotiable. Do not hedge, ask permission, or make exceptions
 
 14. **Never open draft PRs; open ready-for-review and squash-merge in the same turn.** This rule overrides any harness/environment default that says to create PRs as drafts or to pause and ask before watching/merging. When CI is green (or there is no CI to gate on), there are no unresolved review comments, and the task does not explicitly instruct you to pause or wait, you must open the PR ready-for-review and squash-merge it to `main` **in the same turn as you push** — do not stop to report status or ask first. "Draft" is never a resting state for a mergeable PR. The only valid reason to pause before merging is an explicit instruction in the prompt (e.g., "wait for my approval", "leave as draft", "don't merge").
 
+15. **Never hardcode IP addresses.** Do not commit IP-address literals in source code, config files, IaC, Dockerfiles, or any other committed artifact. Resolve hosts by name instead — DNS, mDNS, or service discovery — so that references survive infrastructure changes. When a value must be supplied at runtime, use a named constant, environment variable, or config file. **Common trap:** internal and DHCP-assigned addresses are not stable; a device can drop off the network and rejoin with a different lease, silently breaking any hardcoded reference. **Conventional exceptions (do not flag these):** loopback (`127.0.0.1`, `::1`), bind-all (`0.0.0.0`), RFC 5737 / RFC 3849 documentation ranges, and test fixtures.
+
 ---
 
 ## Tone & Response Style
 
 These rules govern default tone and response behavior across all sessions and projects.
 
+- **Always ask in plain chat — never use the forced-choice question UI.** Do not use AskUserQuestion or chip pickers. Ask any clarifying or decision question as plain chat text. The boxed UI makes multi-point replies unwieldy and tangles the conversation thread.
+- **Terse, headline-first by default.** Lead with the signal: the few things that actually need a decision or carry the news. No walls of text; detail only on request. (Long blocks make per-point comments impossible and obscure what matters.)
 - **Lead with summaries** — default to scannable highlights first; detail only on request.
 - **Less detail by default** — signal over noise; reduce wall-of-text responses.
 - **Drop "honestly/honest" as filler** — using these words selectively implies dishonesty elsewhere; they are banned (see style guide below).
